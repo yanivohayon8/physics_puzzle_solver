@@ -14,7 +14,13 @@ class Piece():
             self.contour_polygon_,_ = compute_contour_polygon(self.image_,**contour_params)
         else:
             self.contour_polygon_ = contour_polygon
-            
+    
+    def get_id(self):
+        return self.id_
+    
+    def get_image(self):
+        return self.image_
+
     def get_contour(self,format="numpy"):
         if format == "shapely":
             raise NotImplementedError("implement returning shapely")

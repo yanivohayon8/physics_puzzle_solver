@@ -2,6 +2,9 @@ import urllib3
 import json
 from urllib.parse import urlencode
 import numpy as np
+from src.piece import Piece
+from src import mask_background
+from PIL import Image
 
 host_="localhost"
 port_ = 8888
@@ -91,8 +94,27 @@ class Response():
             tx = int(trans_json["translateVectorX"])
             ty = int(trans_json["translateVectorY"])
             degrees = np.rad2deg(trans_json["rotationRadians"])
-            degrees*=-1
             self.piece_id2transformation[trans_json["pieceId"]] = {"tx":tx,"ty":ty,"rot_degrees":degrees}
 
     def get_transformations(self)->dict:
         return self.piece_id2transformation
+    
+    def restore_image(self,pieces:list[Piece],background_mode="RGB",background_size=(224,224)):
+        background_img = Image.new(background_mode,background_size)
+
+        for piece in pieces:
+            transformation = self.get_transformations()[piece.get_id()]
+            piece_img_rotated = piece.get_image().rotate(transformation["rot_degrees"]) # should I put minus here? it should be processed in the rotation earlier...
+
+            if piece.get_image().mode == "RGBA":
+                piece_mask = mask_background.mask_background_rgba(piece_img_rotated) 
+            elif piece.get_image().mode == "L":
+                piece_mask = mask_background.mask_background_grayscale(piece_img_rotated) 
+            elif piece.get_image().mode == "RGB":
+                piece_mask = mask_background.mask_background_rgb(piece_img_rotated)
+            else:
+                raise NotImplementedError(f"Implement mask transperancy thresholding for {piece.get_image().mode}...")
+
+            background_img.paste(piece_img_rotated,box=(transformation["tx"],transformation["ty"]),mask=piece_mask)
+
+        return background_img
