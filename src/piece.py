@@ -139,7 +139,7 @@ def get_edges_as_tuples_list(polygon:np.ndarray)->list[tuple]:
     for i in range(num_vertices):
         point_1 = polygon[i].tolist()
         point_2 = polygon[(i+1)%num_vertices].tolist()
-        edges.append((point_1,point_2))
+        edges.append([point_1,point_2])
     
     return edges
 
