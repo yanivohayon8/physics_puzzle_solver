@@ -25,6 +25,9 @@ class Piece():
         
         ax.imshow(self.image_)
         draw_polygon(self.contour_polygon_,ax,**params)
+    
+    def segment_contour(self,params={}):
+        return segment_polygon(self.get_contour(),**params)
 
 def compute_contour_polygon(image:Image,gaus_kernel_size=5,rho1=100,rho2=200,epsilon_factor=0.005)->np.array:
     # Convert the PIL image to a NumPy array
@@ -68,3 +71,57 @@ def draw_polygon(polygon:np.ndarray,ax=None,color="green",linewidth=2,**params):
 
     # Close the polygon by connecting the last point to the first
     ax.plot([polygon_flat[-1, 0], polygon_flat[0, 0]], [polygon_flat[-1, 1], polygon_flat[0, 1]], color=color, linewidth=linewidth,**params)
+
+
+def segment_polygon(polygon:np.ndarray,method="by_threshold",params={}):
+    if method == "recursive_farthest_points":
+        pass
+    else:
+        return segment_polygon_by_threshold_(polygon,**params)    
+
+def segment_polygon_recursive_farthest_points_(polygon:np.ndarray,min_num_segments=3,max_num_segments=8):
+    raise NotImplementedError()
+
+def segment_polygon_by_threshold_(polygon:np.ndarray,curvature_threshold=0.2):
+    scaled_curvature = compute_scaled_points_curvature_(polygon)
+    segmenting_points_indices = []
+    segmenting_points = [] 
+    
+    for i,curvature in enumerate(scaled_curvature):
+        if curvature > curvature_threshold:
+            segmenting_points_indices.append(i)
+            segmenting_points.append((polygon[i,0],polygon[i,1]))
+
+    return np.array(segmenting_points),segmenting_points_indices
+
+def compute_scaled_points_curvature_(polygon:np.ndarray):
+    curvatures = compute_points_curvature_(polygon)
+    return (curvatures-curvatures.min())/(curvatures.max()-curvatures.min())
+
+def compute_points_curvature_(polygon:np.ndarray):
+    xs = get_polygon_xs(polygon)
+    ys = get_polygon_ys(polygon)
+    curvatures = compute_curvature_(xs,ys)
+
+    return curvatures
+
+def compute_curvature_(xs:np.ndarray, ys:np.ndarray)->np.ndarray:
+    dx = np.gradient(xs)
+    dy = np.gradient(ys)
+    ddx = np.gradient(dx)
+    ddy = np.gradient(dy)
+    curvatures = np.abs(dx * ddy - dy * ddx) / (dx**2 + dy**2)**1.5
+
+    return curvatures
+
+def get_polygon_xs(polygon):
+    if isinstance(polygon,np.ndarray):
+        return polygon[:,0]
+
+def get_polygon_ys(polygon):
+    if isinstance(polygon,np.ndarray):
+        return polygon[:,1]
+
+
+
+
