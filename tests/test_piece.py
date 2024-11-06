@@ -1,11 +1,9 @@
 import unittest
-# import sys
-# sys.path.append("..")
-
 from src import piece as piece_module
 from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
+import numpy as np
 
 class TestPiece(unittest.TestCase):
     def test_contour(self):
@@ -15,6 +13,8 @@ class TestPiece(unittest.TestCase):
         _, ax = plt.subplots()
         piece.draw_contour(ax=ax)
         plt.show()
+    
+
 
 class TestContourSegmentation(unittest.TestCase):
     def test_segmentation_by_threshold(self):
@@ -30,7 +30,7 @@ class TestContourSegmentation(unittest.TestCase):
         plt.plot(xs,ys,label="Curve")
         norm = Normalize()
         colors = plt.cm.hot(norm(curvatures))
-        
+
         plt.scatter(xs,ys,c=colors,label='points',cmap="hot")
         cbar = plt.colorbar()
         cbar.set_label("Curvature")
@@ -47,6 +47,19 @@ class TestContourSegmentation(unittest.TestCase):
         plt.xlabel('X-axis')
         plt.ylabel('Y-axis')
         plt.show()
+
+class TestPolygon(unittest.TestCase):
+    def test_polygon_edges_as_tuples(self):
+        square = np.array([
+            [0,0],
+            [10,0],
+            [10,10],
+            [0,10]
+        ])
+
+        edges = piece_module.get_edges_as_tuples_list(square)
+
+        assert len(edges) == 4
 
 if __name__ == "__main__":
     unittest.main()

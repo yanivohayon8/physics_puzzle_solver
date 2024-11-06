@@ -29,9 +29,9 @@ class Piece():
     def segment_contour(self,params={}):
         return segment_polygon(self.get_contour(),**params)
 
-def compute_contour_polygon(image:Image,gaus_kernel_size=5,rho1=100,rho2=200,epsilon_factor=0.005)->np.array:
+def compute_contour_polygon(piece_image:Image,gaus_kernel_size=5,rho1=100,rho2=200,epsilon_factor=0.005)->np.array:
     # Convert the PIL image to a NumPy array
-    np_image = np.array(image)
+    np_image = np.array(piece_image)
     
     # If the image has an alpha channel, remove it
     if np_image.shape[-1] == 4:
@@ -122,6 +122,18 @@ def get_polygon_ys(polygon):
     if isinstance(polygon,np.ndarray):
         return polygon[:,1]
 
+def get_num_vertices(polygon:np.ndarray):
+    return polygon.shape[0]
 
+def get_edges_as_tuples_list(polygon:np.ndarray)->list[tuple]:
+    num_vertices = get_num_vertices(polygon)
+    edges = []
+
+    for i in range(num_vertices):
+        point_1 = polygon[i].tolist()
+        point_2 = polygon[(i+1)%num_vertices].tolist()
+        edges.append((point_1,point_2))
+    
+    return edges
 
 
