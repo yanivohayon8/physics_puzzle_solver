@@ -20,8 +20,11 @@ class Piece():
             raise NotImplementedError("implement returning shapely")
         if format == "numpy":
             return self.contour_polygon_
+        elif format == "list":
+            return [tuple(vert) for vert in self.contour_polygon_]
         else:
-            raise NotImplementedError("implement returning as list")
+            raise NotImplementedError("implement me")
+
     
     def draw_contour(self,ax=None,**params):
         if ax is None:

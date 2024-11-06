@@ -1,6 +1,6 @@
 import unittest
 from src import piece as piece_module
-from PIL import Image
+from PIL import Image,ImageDraw
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import numpy as np
@@ -12,6 +12,37 @@ class TestPiece(unittest.TestCase):
 
         _, ax = plt.subplots()
         piece.draw_contour(ax=ax)
+        plt.show()
+    
+    def create_polygon_image_(self,width, height, vertices:list,fill_color="white"):
+        image = Image.new("RGB", (width, height))
+        draw = ImageDraw.Draw(image)
+
+        # Draw the polygon
+        draw.polygon(vertices, fill=fill_color)
+
+        return image
+
+    def test_triangle_square(self):
+        image_size = (128,128)
+        triangle_vertices = [(64, 24), (24, 104), (104, 104)]
+        square_vertices = [(34, 34), (34, 94), (94, 94), (94, 34)]
+        triangle_image = self.create_polygon_image_(*image_size, triangle_vertices )
+        square_image = self.create_polygon_image_(*image_size,square_vertices )
+
+        triangle = piece_module.Piece("triangle",triangle_image)
+        square = piece_module.Piece("square",square_image)
+
+        _, axs = plt.subplots(2,2)
+
+        triangle_contour = triangle.get_contour(format="list")
+        square_contour = square.get_contour(format="list")
+        
+        axs[0,0].imshow(triangle_image)
+        axs[0,1].imshow(self.create_polygon_image_(*image_size, triangle_contour ))
+        axs[1,0].imshow(square_image)
+        axs[1,1].imshow(self.create_polygon_image_(*image_size, square_contour ))
+
         plt.show()
     
 
