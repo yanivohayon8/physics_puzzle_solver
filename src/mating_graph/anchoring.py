@@ -34,8 +34,4 @@ def edges_as_anchor_confs(edges:list,parent_piece:Piece):
         anchor = AnchorConf(edge,parent_piece)
         anchors.append(anchor)
 
-        # to exploit the 4 permutations of attaching two pieces
-        reversed_anchor = anchor.reversed()
-        anchors.append(reversed_anchor) 
-
     return anchors
