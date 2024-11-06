@@ -6,11 +6,15 @@ import matplotlib.pyplot as plt
 
 class Piece():
     
-    def __init__(self,id_,image:Image,contour_params={}) -> None:
+    def __init__(self,id_,image:Image,contour_params={},contour_polygon=None) -> None:
         self.id_ = id_
         self.image_ = image
-        self.contour_polygon_,_ = compute_contour_polygon(self.image_,**contour_params)
 
+        if contour_polygon is None:
+            self.contour_polygon_,_ = compute_contour_polygon(self.image_,**contour_params)
+        else:
+            self.contour_polygon_ = contour_polygon
+            
     def get_contour(self,format="numpy"):
         if format == "shapely":
             raise NotImplementedError("implement returning shapely")
@@ -28,6 +32,9 @@ class Piece():
     
     def segment_contour(self,params={}):
         return segment_polygon(self.get_contour(),**params)
+
+    def __repr__(self)->str:
+        return f"Piece-{self.id_}"
 
 def compute_contour_polygon(piece_image:Image,gaus_kernel_size=5,rho1=100,rho2=200,epsilon_factor=0.005)->np.array:
     # Convert the PIL image to a NumPy array
