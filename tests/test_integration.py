@@ -1,11 +1,7 @@
 import unittest
-from src.piece import Piece,get_edges_as_tuples_list
+from src.piece import Piece
 from PIL import Image,ImageDraw
-from src.mating_graph.anchoring import AnchorConf,edges_as_anchor_confs
-from src.mating_graph import mating_graph
-from src.mating_graph.build import get_anchors_from_piece_segmentation_
-import matplotlib.pyplot as plt
-import numpy as np
+from src.mating_graph import functions
 
 
 class TestIntegrationToy(unittest.TestCase):
@@ -28,11 +24,7 @@ class TestIntegrationToy(unittest.TestCase):
         square_image = self.create_polygon_image_(width, height, square_vertices)
         square = Piece("square",square_image)
 
-        anchors = get_anchors_from_piece_segmentation_([triangle,square])
-        mating_graph.initGraph(anchors)
-        mating_graph.draw()
-
-        plt.show()
+        graph = functions.bulid_graph([square,triangle])
 
         
 

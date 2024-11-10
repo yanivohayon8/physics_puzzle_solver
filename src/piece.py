@@ -39,8 +39,13 @@ class Piece():
         ax.imshow(self.image_)
         draw_polygon(self.contour_polygon_,ax,**params)
     
-    def segment_contour(self,params={}):
-        return segment_polygon(self.get_contour(),**params)
+    def segment_contour(self,params={},output_format="numpy_points"):
+        segmenting_points,segmenting_points_indices = segment_polygon(self.get_contour(),**params)
+
+        if output_format == "edges_tuples":
+            return get_edges_as_tuples_list(segmenting_points), None
+        else:
+            return segmenting_points,segmenting_points_indices
 
     def __repr__(self)->str:
         return f"Piece-{self.id_}"

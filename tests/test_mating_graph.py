@@ -1,13 +1,12 @@
 import unittest
-from src.piece import Piece,get_edges_as_tuples_list
+from src.mating_graph.internals import AnchorConf
+from src.piece import Piece
 from PIL import Image,ImageDraw
-from src.mating_graph.anchoring import AnchorConf,edges_as_anchor_confs
-from src.mating_graph import mating_graph
-from src.mating_graph.build import get_anchors_from_piece_segmentation_
+from src.mating_graph import internals
+from src.mating_graph import functions
 import matplotlib.pyplot as plt
-import numpy as np
 
-class TestToyMatingGraph(unittest.TestCase):
+class TestInternals(unittest.TestCase):
     def test_init_graph(self):
         blank_image = Image.new("L",(100,100))
         piece1 = Piece("0",blank_image,contour_polygon=[])
@@ -20,28 +19,14 @@ class TestToyMatingGraph(unittest.TestCase):
             AnchorConf([[683.2693400246188, 1164.8895464444654]] ,piece2)
         ]
         
-        mating_graph.initGraph(anchors_confs)
-        mating_graph.draw()
+        graph = internals.MatingGraph(anchors_confs)
+        graph.draw()
 
         plt.show()
 
-    def test_integration_to_segmentation(self):
-        piece1 = Piece("1",None,contour_polygon=[])
-        segmenting_points_1 = np.array([[ 727,  945],[1025, 1267],[1247,  894]])
-        edges_1 = get_edges_as_tuples_list(segmenting_points_1)
-        anchors1 = edges_as_anchor_confs(edges_1,piece1)
 
-        piece2 = Piece("2",None,contour_polygon=[])
-        segmenting_points_2 = np.array([[1025, 1267],[1247,  894],[ 869,  784]])
-        edges_2 = get_edges_as_tuples_list(segmenting_points_2)
-        anchors2 = edges_as_anchor_confs(edges_2,piece2)
+class TestBuildingGraph(unittest.TestCase):
 
-        total_anchors = anchors1+anchors2
-        mating_graph.initGraph(total_anchors)
-        mating_graph.draw()
-
-        plt.show()
-    
     def create_polygon_image_(self,width, height, vertices:list,fill_color="white"):
         image = Image.new("RGB", (width, height))
         draw = ImageDraw.Draw(image)
@@ -60,9 +45,8 @@ class TestToyMatingGraph(unittest.TestCase):
         square_image = self.create_polygon_image_(width, height, square_vertices)
         square = Piece("square",square_image)
 
-        anchors = get_anchors_from_piece_segmentation_([triangle,square])
-        mating_graph.initGraph(anchors)
-        mating_graph.draw()
+        graph = functions.bulid_graph([square,triangle])
+        graph.draw()
 
         plt.show()
 
