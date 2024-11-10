@@ -1,10 +1,17 @@
 import unittest
-from src.mating_graph.internals import AnchorConf
+from src.mating_graph.internals import AnchorConf,simulate_reconstruction_
 from src.piece import Piece
 from PIL import Image,ImageDraw
 from src.mating_graph import internals
 from src.mating_graph import functions
 import matplotlib.pyplot as plt
+
+def create_polygon_image_(width, height, vertices:list,fill_color="white"):
+    image = Image.new("RGB", (width, height))
+    draw = ImageDraw.Draw(image)
+    draw.polygon(vertices, fill=fill_color)
+
+    return image
 
 class TestInternals(unittest.TestCase):
     def test_init_graph(self):
@@ -24,15 +31,22 @@ class TestInternals(unittest.TestCase):
 
         plt.show()
 
+    def test_simulation(self):
+        width, height = 128, 128
+        triangle = Piece("triangle",create_polygon_image_(width, height,[(64, 24), (24, 104), (104, 104)]))
+        square = Piece("square",create_polygon_image_(width, height,[(34, 34), (34, 94), (94, 94), (94, 34)]))
+        anchor1 = AnchorConf([[64, 24]] ,triangle)
+        anchor2 = AnchorConf([[34, 34]] ,square)
+
+        response = simulate_reconstruction_(anchor1,anchor2)
+        assembly_image = response.restore_image([triangle,square])
+
+        plt.imshow(assembly_image)
+        plt.show()
+
+
 
 class TestBuildingGraph(unittest.TestCase):
-
-    def create_polygon_image_(self,width, height, vertices:list,fill_color="white"):
-        image = Image.new("RGB", (width, height))
-        draw = ImageDraw.Draw(image)
-        draw.polygon(vertices, fill=fill_color)
-
-        return image
 
     def test_get_anchors_from_segmenting(self):
         width, height = 128, 128

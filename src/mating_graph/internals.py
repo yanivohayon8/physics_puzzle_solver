@@ -2,6 +2,7 @@ from functools import reduce
 import networkx as nx
 import matplotlib.pyplot as plt
 from src.piece import Piece
+from src.physics import simulator
 
 
 class AnchorConf():
@@ -25,6 +26,9 @@ class AnchorConf():
 
     def get_parent_piece(self):
         return self.parent_piece_
+    
+    def get_points(self):
+        return self.anchor_points_
 
     def reversed(self):
         return AnchorConf(list(reversed(self.anchor_points_)),self.parent_piece_)
@@ -115,7 +119,7 @@ class MatingGraph():
         self.drawing_pos_ = nx.kamada_kawai_layout(self.graph_, pos=pos_tmp, weight="pos_weight")
 
 
-def get_anchors_from_piece_segmentation_(pieces:list[Piece]):
+def get_anchors_from_piece_segmentation(pieces:list[Piece]):
     total_anchors = []
 
     for piece in pieces:
@@ -129,4 +133,41 @@ def get_anchors_from_piece_segmentation_(pieces:list[Piece]):
     return total_anchors
 
 
+
+
+def anchor_conf_to_matings_(conf1:AnchorConf,conf2:AnchorConf):
+    '''
+        note - the order of the anchor_points of conf1 and conf2 matters!
+    '''
+    i = 0
+    matings = []
+    anchor_points_1 = conf1.get_points()
+    anchor_points_2 = conf2.get_points()
+    piece_id_1 = conf1.get_parent_piece().get_id()
+    piece_id_2 = conf2.get_parent_piece().get_id()
+
+    while i < conf1.get_num_anchors() and i < conf2.get_num_anchors():
+        point_1 = anchor_points_1[i]
+        point_2 = anchor_points_2[i]
+        mating_json = simulator.build_mating_json(piece_id_1,point_1,piece_id_2,point_2)
+        matings.append(mating_json)
+        i+=1
+    
+    return matings
+
+
+def simulate_reconstruction_(anchor_conf_1:AnchorConf,anchor_conf_2:AnchorConf,**params):
+    piece_1 = anchor_conf_1.get_parent_piece()
+    piece_id_1 = piece_1.get_id()
+    piece_2 = anchor_conf_2.get_parent_piece()
+    piece_id_2 = piece_2.get_id()
+    assert piece_id_1 != piece_id_2
+
+    matings_json = anchor_conf_to_matings_(anchor_conf_1,anchor_conf_2)
+    pieces_json = [
+        simulator.build_piece_json(piece_id_1,piece_1.get_contour()),
+        simulator.build_piece_json(piece_id_2,piece_2.get_contour())
+    ]
+
+    return simulator.send_reconstruction(pieces_json,matings_json,**params)
 
