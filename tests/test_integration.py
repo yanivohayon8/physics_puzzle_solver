@@ -2,7 +2,7 @@ import unittest
 from src.piece import Piece
 from PIL import Image,ImageDraw
 from src.mating_graph import functions
-
+import matplotlib.pyplot as plt
 
 class TestIntegrationToy(unittest.TestCase):
 
@@ -25,6 +25,9 @@ class TestIntegrationToy(unittest.TestCase):
         square = Piece("square",square_image)
 
         graph = functions.bulid_graph([square,triangle])
+        graph.draw()
+
+        plt.show()
 
         
 
