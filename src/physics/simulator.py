@@ -5,6 +5,7 @@ import numpy as np
 from src.piece import Piece
 from src import mask_background
 from PIL import Image
+from shapely import Polygon
 
 host_="localhost"
 port_ = 8888
@@ -99,6 +100,14 @@ class Response():
     def get_transformations(self)->dict:
         return self.piece_id2transformation
     
+    def get_final_polygons(self,out_format="tuples")->list:
+        pieces_coordinates = [piece_json["coordinates"] for piece_json in self.response_json["piecesFinalCoords"]]
+
+        if out_format == "shapely":
+            return [Polygon(coords) for coords in pieces_coordinates]
+        else:
+            return pieces_coordinates
+
     def restore_image(self,pieces:list[Piece],background_mode="RGB",background_size=(224,224)):
         background_img = Image.new(background_mode,background_size)
 

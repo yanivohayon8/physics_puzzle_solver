@@ -168,7 +168,11 @@ class MatingGraph():
 
         return response
 
+    def get_aligned_polygons_(self,link)->list:
+        response = self.get_link_simulation_response_(link)
+        return response.get_final_polygons(out_format="shapely")
 
+        
     
 
 

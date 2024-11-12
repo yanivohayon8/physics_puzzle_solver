@@ -51,9 +51,6 @@ class TestInternals(unittest.TestCase):
 
         assert link_1 == link_2
 
-        
-
-
     def test_simulations_links(self):
         width, height = 128, 128
         triangle = Piece("triangle",create_polygon_image_(width, height,[(64, 24), (24, 104), (104, 104)]))
@@ -70,6 +67,31 @@ class TestInternals(unittest.TestCase):
         assembly_image = response.restore_image([triangle,square])
         plt.imshow(assembly_image)
         plt.show()
+    
+    def test_aligned_polygons(self):
+        width, height = 128, 128
+        triangle = Piece("triangle",create_polygon_image_(width, height,[(64, 24), (24, 104), (104, 104)]))
+        square = Piece("square",create_polygon_image_(width, height,[(34, 34), (34, 94), (94, 94), (94, 34)]))
+        anchors_confs =[AnchorConf([[64, 24]] ,triangle),AnchorConf([[34, 34]] ,square)]
+
+        graph = internals.MatingGraph(anchors_confs)
+        link = graph.get_as_link_tuple_(anchors_confs[0],anchors_confs[1])
+
+        _, axs = plt.subplots(1,2)
+
+        response = graph.get_link_simulation_response_(link)
+        assembly_image = response.restore_image([triangle,square])
+        axs[0].imshow(assembly_image)
+
+        aligned_polygons = graph.get_aligned_polygons_(link)
+        xs,ys = aligned_polygons[0].exterior.xy
+        axs[1].fill(xs,ys,facecolor="lightsalmon")
+        xs,ys = aligned_polygons[1].exterior.xy
+        axs[1].fill(xs,ys,facecolor="blue")
+
+        plt.show()
+
+
 
 
 
