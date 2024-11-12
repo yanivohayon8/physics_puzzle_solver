@@ -42,6 +42,7 @@ class MatingGraph():
     LINK_TYPE_INTER_PIECE = "inter_piece"
     ANCHOR_CONF_ATTRIBUTE = "conf"
     SIMULATION_RESPONSE_ATTRIBUTE = "simulation_response"
+    EDGE_TYPE_ATTRIBUTE = "edge_type"
 
     def __init__(self,anchor_confs: list[AnchorConf]):
         self.graph_ = nx.Graph()
@@ -73,14 +74,14 @@ class MatingGraph():
     def get_inter_piece_links(self):
         graph_links = self.graph_.edges(data=True)
 
-        return [(u, v) for u, v, data in graph_links if data["edge_type"] == self.LINK_TYPE_INTER_PIECE]
+        return [(u, v) for u, v, data in graph_links if data[self.EDGE_TYPE_ATTRIBUTE] == self.LINK_TYPE_INTER_PIECE]
 
     def get_interpiece_links_to_anchors_(self) -> dict:
         graph_links = self.graph_.edges(data=True)
         pairs = {}
 
         for u, v, data in graph_links:
-            if data["edge_type"] == self.LINK_TYPE_INTER_PIECE:
+            if data[self.EDGE_TYPE_ATTRIBUTE] == self.LINK_TYPE_INTER_PIECE:
                 data_u = self.graph_.nodes[u]
                 data_v = self.graph_.nodes[v]
                 pairs[(u, v)] = (data_u["conf"], data_v["conf"])
@@ -104,9 +105,9 @@ class MatingGraph():
         same_piece_links = []
 
         for u, v, data in graph_links:
-            if data["edge_type"] == self.LINK_TYPE_SAME_PIECE:
+            if data[self.EDGE_TYPE_ATTRIBUTE] == self.LINK_TYPE_SAME_PIECE:
                 same_piece_links.append((u, v, data))
-            elif data["edge_type"] == self.LINK_TYPE_INTER_PIECE:
+            elif data[self.EDGE_TYPE_ATTRIBUTE] == self.LINK_TYPE_INTER_PIECE:
                 inter_piece_links.append((u, v, data))
 
         nx.draw_networkx_edges(self.graph_, pos=pos_spaced, edge_color="black", edgelist=same_piece_links, width=3, ax=ax)
