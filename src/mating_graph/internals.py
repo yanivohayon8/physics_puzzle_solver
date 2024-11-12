@@ -1,9 +1,10 @@
 from functools import reduce
 import networkx as nx
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
 from src.piece import Piece
 from src.physics import simulator
-
+import matplotlib.cm as cm
 
 class AnchorConf():
 
@@ -43,6 +44,7 @@ class MatingGraph():
     ANCHOR_CONF_ATTRIBUTE = "conf"
     SIMULATION_RESPONSE_ATTRIBUTE = "simulation_response"
     EDGE_TYPE_ATTRIBUTE = "edge_type"
+    COMPATABILITY_PREFIX_ATTRIBUTE = "compatability_"
 
     def __init__(self,anchor_confs: list[AnchorConf]):
         self.graph_ = nx.Graph()
@@ -91,7 +93,7 @@ class MatingGraph():
     def get_node_data_(self, node):
         return self.graph_.nodes[node]
 
-    def draw(self, ax=None, **kwargs):
+    def draw(self, ax=None,compatibility_name=None, **kwargs):
         if ax is None:
             ax = plt.subplot()
 
@@ -111,7 +113,31 @@ class MatingGraph():
                 inter_piece_links.append((u, v, data))
 
         nx.draw_networkx_edges(self.graph_, pos=pos_spaced, edge_color="black", edgelist=same_piece_links, width=3, ax=ax)
-        nx.draw_networkx_edges(self.graph_, pos=pos_spaced, edge_color="blue", edgelist=inter_piece_links, width=3, ax=ax)
+
+        if compatibility_name is None:
+            _,_,sampled_link_data = inter_piece_links[0]
+            compatibility_exists = [att for att in sampled_link_data.keys() if self.COMPATABILITY_PREFIX_ATTRIBUTE in att]
+
+            if len(compatibility_exists) == 0:
+                nx.draw_networkx_edges(self.graph_, pos=pos_spaced, edge_color="blue", edgelist=inter_piece_links, width=3, ax=ax)
+                return
+            
+            compatibility_name = compatibility_exists[0] # chose defaultly the first
+
+
+        weights = [data[compatibility_name] for u, v, data in inter_piece_links]
+        cmap = getattr(cm,"cool")
+        normalized_weights = [(w - (min(weights)+1e-5)) / (max(weights) - (min(weights)+1e-5)) for w in weights]
+
+        comp_edges_colors = [cmap(weight) for weight in normalized_weights]
+        nx.draw_networkx_edges(self.graph_,pos=pos_spaced,edgelist=inter_piece_links,edge_color=comp_edges_colors,edge_cmap=cmap,ax=ax)
+        sm = cm.ScalarMappable(cmap=cmap, norm=Normalize(vmin=min(weights), vmax=max(weights)))
+        sm.set_array([])  # dummy array for the colorbar
+
+        # Add colorbar to the plot
+        cbar = plt.colorbar(sm, ax=ax)
+        cbar.set_label(compatibility_name)
+        
 
     def remove_links_(self, links_to_remove: list):
         self.graph_.remove_edges_from(links_to_remove)
