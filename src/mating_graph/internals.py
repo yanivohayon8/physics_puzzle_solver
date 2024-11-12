@@ -40,6 +40,8 @@ class MatingGraph():
 
     LINK_TYPE_SAME_PIECE = "same_piece"
     LINK_TYPE_INTER_PIECE = "inter_piece"
+    ANCHOR_CONF_ATTRIBUTE = "conf"
+    SIMULATION_RESPONSE_ATTRIBUTE = "simulation_response"
 
     def __init__(self,anchor_confs: list[AnchorConf]):
         self.graph_ = nx.Graph()
@@ -68,7 +70,7 @@ class MatingGraph():
         pos_tmp = nx.shell_layout(self.graph_)
         self.drawing_pos_ = nx.kamada_kawai_layout(self.graph_, pos=pos_tmp, weight="pos_weight")
 
-    def get_inter_piece_edges_(self, is_data=True):
+    def get_inter_piece_links_(self, is_data=True):
         graph_links = self.graph_.edges(data=True)
 
         if is_data:
@@ -113,10 +115,61 @@ class MatingGraph():
         nx.draw_networkx_edges(self.graph_, pos=pos_spaced, edge_color="black", edgelist=same_piece_links, width=3, ax=ax)
         nx.draw_networkx_edges(self.graph_, pos=pos_spaced, edge_color="blue", edgelist=inter_piece_links, width=3, ax=ax)
 
-    def remove_edges_(self, edges_to_remove: list):
-        self.graph_.remove_edges_from(edges_to_remove)
+    def remove_links_(self, links_to_remove: list):
+        self.graph_.remove_edges_from(links_to_remove)
         pos_tmp = nx.shell_layout(self.graph_)
         self.drawing_pos_ = nx.kamada_kawai_layout(self.graph_, pos=pos_tmp, weight="pos_weight")
+
+
+
+    def get_as_link_tuple_(self,node1,node2):
+        if not isinstance(node1,str):
+            node1 = repr(node1)
+        if not isinstance(node2,str):
+            node2 = repr(node2)
+        
+        return (node1,node2)
+
+    def get_link_data(self,link:tuple=None,node1=None,node2=None)->dict:
+        if not link is None:
+            return self.graph_.edges[link]
+        elif not node1 is None and not node2 is None:
+            link_tuple = self.get_as_link_tuple_(node1,node2)
+            return self.graph_.edges[link_tuple]
+
+    def update_link_data(self,key,val,link:tuple=None,node1=None,node2=None):
+        if not link is None:
+            self.graph_.edges[link][key] = val
+        elif not node1 is None and not node2 is None:
+            link_tuple = self.get_as_link_tuple_(node1,node2)
+            self.graph_.edges[link_tuple][key] = val
+
+    def get_first_node_(self,link:tuple):
+        return link[0]
+    
+    def get_second_node_(self,link:tuple):
+        return link[1]
+
+    def get_node_anchor_conf_(self,node):
+        return self.get_node_data_(node)[self.ANCHOR_CONF_ATTRIBUTE]
+
+    def get_link_simulation_response_(self,link):
+        link_data = self.get_link_data(link)
+
+        if self.SIMULATION_RESPONSE_ATTRIBUTE in link_data.keys():
+            return link_data[self.SIMULATION_RESPONSE_ATTRIBUTE]
+
+        node_1 = self.get_first_node_(link)
+        node_2 = self.get_second_node_(link)
+        anchor_conf_1 = self.get_node_anchor_conf_(node_1)
+        anchor_conf_2 = self.get_node_anchor_conf_(node_2)
+        response = simulate_reconstruction_(anchor_conf_1,anchor_conf_2)
+        self.update_link_data(self.SIMULATION_RESPONSE_ATTRIBUTE,response,link=link)
+
+        return response
+
+
+    
 
 
 def get_anchors_from_piece_segmentation(pieces:list[Piece]):

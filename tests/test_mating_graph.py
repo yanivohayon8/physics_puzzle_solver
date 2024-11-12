@@ -31,6 +31,48 @@ class TestInternals(unittest.TestCase):
 
         plt.show()
 
+    def test_get_link(self):
+        width, height = 128, 128
+        triangle = Piece("triangle",create_polygon_image_(width, height,[(64, 24), (24, 104), (104, 104)]))
+        square = Piece("square",create_polygon_image_(width, height,[(34, 34), (34, 94), (94, 94), (94, 34)]))
+        
+        anchor1 = AnchorConf([[64, 24]] ,triangle)
+        anchor2 = AnchorConf([[34, 34]] ,square)
+        anchors_confs =[anchor1,anchor2]
+        graph = internals.MatingGraph(anchors_confs)
+        
+        link_1 = graph.get_link_data(node1=anchor1,node2=anchor2)
+        assert isinstance(link_1,dict)
+        print(link_1)
+
+        link_2 = graph.get_link_data((repr(anchor1),repr(anchor2)))
+        assert isinstance(link_2,dict)
+        print(link_2)
+
+        assert link_1 == link_2
+
+        
+
+
+    def test_simulations_links(self):
+        width, height = 128, 128
+        triangle = Piece("triangle",create_polygon_image_(width, height,[(64, 24), (24, 104), (104, 104)]))
+        square = Piece("square",create_polygon_image_(width, height,[(34, 34), (34, 94), (94, 94), (94, 34)]))
+        anchors_confs =[AnchorConf([[64, 24]] ,triangle),AnchorConf([[34, 34]] ,square)]
+
+        graph = internals.MatingGraph(anchors_confs)
+        link = graph.get_as_link_tuple_(anchors_confs[0],anchors_confs[1])
+        data_before = graph.get_link_data(link)
+        response = graph.get_link_simulation_response_(link)
+
+        assert data_before != graph.get_link_data(link).keys()
+
+        assembly_image = response.restore_image([triangle,square])
+        plt.imshow(assembly_image)
+        plt.show()
+
+
+
     def test_simulation(self):
         width, height = 128, 128
         triangle = Piece("triangle",create_polygon_image_(width, height,[(64, 24), (24, 104), (104, 104)]))
@@ -52,11 +94,11 @@ class TestBuildingGraph(unittest.TestCase):
         width, height = 128, 128
 
         triangle_vertices = [(64, 24), (24, 104), (104, 104)]
-        triangle_image = self.create_polygon_image_(width, height, triangle_vertices)
+        triangle_image = create_polygon_image_(width, height, triangle_vertices)
         triangle = Piece("triangle",triangle_image)
 
         square_vertices = [(34, 34), (34, 94), (94, 94), (94, 34)]
-        square_image = self.create_polygon_image_(width, height, square_vertices)
+        square_image = create_polygon_image_(width, height, square_vertices)
         square = Piece("square",square_image)
 
         graph = functions.bulid_graph([square,triangle])
