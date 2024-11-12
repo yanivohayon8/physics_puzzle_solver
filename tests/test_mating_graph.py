@@ -83,16 +83,13 @@ class TestInternals(unittest.TestCase):
         assembly_image = response.restore_image([triangle,square])
         axs[0].imshow(assembly_image)
 
-        aligned_polygons = graph.get_aligned_polygons_(link)
+        aligned_polygons = graph.get_aligned_polygons(link)
         xs,ys = aligned_polygons[0].exterior.xy
         axs[1].fill(xs,ys,facecolor="lightsalmon")
         xs,ys = aligned_polygons[1].exterior.xy
         axs[1].fill(xs,ys,facecolor="blue")
 
         plt.show()
-
-
-
 
 
     def test_simulation(self):
@@ -130,7 +127,24 @@ class TestBuildingGraph(unittest.TestCase):
 
 
 
+class TestLinksCompatabilities(unittest.TestCase):
+    def test_overlapping(self):
+        width, height = 128, 128
+        triangle = Piece("triangle",create_polygon_image_(width, height,[(64, 24), (24, 104), (104, 104)]))
+        square = Piece("square",create_polygon_image_(width, height,[(34, 34), (34, 94), (94, 94), (94, 34)]))
+        anchors_confs =[AnchorConf([[64, 24]] ,triangle),AnchorConf([[34, 34]] ,square)]
+        graph = internals.MatingGraph(anchors_confs)
 
+        link = graph.get_as_link_tuple_(anchors_confs[0],anchors_confs[1])
+        data_before = graph.get_link_data(link).copy()
+        functions.compatability_overlapping(graph)
+        data_after = graph.get_link_data(link)
+
+        # adding response key and overlapping key
+        assert len(data_before.keys())+2 == len(data_after.keys())
+
+        graph.draw()
+        plt.show()
 
 
 

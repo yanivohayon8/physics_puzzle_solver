@@ -70,13 +70,10 @@ class MatingGraph():
         pos_tmp = nx.shell_layout(self.graph_)
         self.drawing_pos_ = nx.kamada_kawai_layout(self.graph_, pos=pos_tmp, weight="pos_weight")
 
-    def get_inter_piece_links_(self, is_data=True):
+    def get_inter_piece_links(self):
         graph_links = self.graph_.edges(data=True)
 
-        if is_data:
-            return [(u, v, data) for u, v, data in graph_links if data["edge_type"] == self.LINK_TYPE_INTER_PIECE]
-        else:
-            return [(u, v) for u, v, data in graph_links if data["edge_type"] == self.LINK_TYPE_INTER_PIECE]
+        return [(u, v) for u, v, data in graph_links if data["edge_type"] == self.LINK_TYPE_INTER_PIECE]
 
     def get_interpiece_links_to_anchors_(self) -> dict:
         graph_links = self.graph_.edges(data=True)
@@ -168,11 +165,13 @@ class MatingGraph():
 
         return response
 
-    def get_aligned_polygons_(self,link)->list:
+    def get_aligned_polygons(self,link)->list:
         response = self.get_link_simulation_response_(link)
         return response.get_final_polygons(out_format="shapely")
 
-        
+    def update_compatibility(self,link,name,val):
+        key_name = f"compatability_{name}"
+        self.update_link_data(key_name,val,link)
     
 
 
